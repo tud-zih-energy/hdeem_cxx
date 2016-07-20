@@ -820,9 +820,29 @@ public:
 
     /**
      * @param sensor the id of the sensor
-     * @return the name of the sensor as given by hdeem
+     * @return the name of the sensor which is upper case.
      */
     std::string sensor_name(sensor_id sensor) const
+    {
+        std::string name_upper;
+        if (sensor.is_blade()) {
+            assert(sensor.index() < bmc_.nb_blade_sensors);
+            name_upper = std::string(bmc_.name_blade_sensors[sensor.index()]);
+        } else {
+            assert(sensor.is_vr());
+            assert(sensor.index() < bmc_.nb_vr_sensors);
+            name_upper = std::string(bmc_.name_vr_sensors[sensor.index()]);
+        }
+        std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(),
+                       ::toupper);
+        return name_upper;
+    }
+
+    /**
+     * @param sensor the id of the sensor
+     * @return the real name of the sensor as given by hdeem
+     */
+    std::string sensor_real_name(sensor_id sensor) const
     {
         if (sensor.is_blade()) {
             assert(sensor.index() < bmc_.nb_blade_sensors);
