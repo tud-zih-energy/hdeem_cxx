@@ -17,6 +17,7 @@
 #include <vector>
 #include <cassert>
 #include <cstring>
+#include <algorithm>
 
 extern "C" {
 #include <hdeem.h>
