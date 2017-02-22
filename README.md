@@ -41,5 +41,7 @@ std::cout << "Blade power: " << stats.average(hdeem::sensor_id::blade(0)) << "\n
 If you like to have more details about HDEEM, or how to use the measurement hdeem_cxx please write to:
 
 thomas.ilsche@tu-dresden.de
+
 mario.bielert@tu-dresden.de
+
 andreas.gocht@tu-dresden.de
