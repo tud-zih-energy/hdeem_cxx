@@ -36,6 +36,13 @@ std::cout << "Blade power: " << stats.average(hdeem::sensor_id::blade(0)) << "\n
 
 ```
 
+## Build
+
+You need to link freeipmi and rt additionaly to the originonal hdeem module.
+
+```
+g++ test.cpp -std=c++14 -o test -I./hdeem_cxx/include/ -lhdeem -lfreeipmi -lrt
+```
 
 ## Contact
 If you like to have more details about HDEEM, or how to use the measurement hdeem_cxx please write to:
