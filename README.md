@@ -7,7 +7,7 @@ For details about the hdeem c api please have a look at:
 
 [https://tu-dresden.de/zih/forschung/projekte/hdeem](https://tu-dresden.de/zih/forschung/projekte/hdeem)
 
-For citing HDEEM please use [[DOI: 10.1109/E2SC.2014.13](dx.doi.org/10.1109/E2SC.2014.13)]
+For citing HDEEM please use [[DOI: 10.1109/E2SC.2014.13](https://dx.doi.org/10.1109/E2SC.2014.13)]
 
 ## Using hdeem_cxx
 
