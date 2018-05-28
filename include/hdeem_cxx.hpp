@@ -10,35 +10,35 @@
 #ifndef HDEEM_HDEEM_CXX_HPP
 #define HDEEM_HDEEM_CXX_HPP
 
-#include <string>
-#include <chrono>
-#include <thread>
-#include <iostream>
-#include <vector>
-#include <cassert>
-#include <cstring>
 #include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
 
-extern "C" {
+extern "C"
+{
 #include <hdeem.h>
 }
 namespace hdeem
 {
-    namespace chrono
+namespace chrono
+{
+    using clock = std::chrono::system_clock;
+    using duration = std::chrono::nanoseconds;
+    using time_point = std::chrono::time_point<clock, duration>;
+
+    inline time_point convert_hdeem_time(timespec ts)
     {
-        using clock = std::chrono::system_clock;
-        using duration = std::chrono::nanoseconds;
-        using time_point = std::chrono::time_point<clock, duration>;
-
-
-        inline time_point convert_hdeem_time(timespec ts)
-        {
-            std::chrono::seconds time_seconds(ts.tv_sec);
-            std::chrono::nanoseconds time_nanoseconds(ts.tv_nsec);
-            auto time_since_epoch(time_seconds + time_nanoseconds);
-            return time_point(time_since_epoch);
-        }
+        std::chrono::seconds time_seconds(ts.tv_sec);
+        std::chrono::nanoseconds time_nanoseconds(ts.tv_nsec);
+        auto time_since_epoch(time_seconds + time_nanoseconds);
+        return time_point(time_since_epoch);
     }
+} // namespace chrono
 /**
  * General exception for all errors returned by hdeem functions.
  * For other consistency errors, std::runtime_error is used,
@@ -126,10 +126,12 @@ inline std::ostream& operator<<(std::ostream& s, sensor_id sensor)
 namespace detail
 {
     class single_sensor_data;
-    class single_sensor_iterator : public std::iterator<std::input_iterator_tag, std::pair<size_t, float>>
+    class single_sensor_iterator
+    : public std::iterator<std::input_iterator_tag, std::pair<size_t, float>>
     {
     public:
-        single_sensor_iterator(const single_sensor_data& data, size_t index = 0) : data_(data), index_(index)
+        single_sensor_iterator(const single_sensor_data& data, size_t index = 0)
+        : data_(data), index_(index)
         {
         }
 
@@ -227,7 +229,7 @@ namespace detail
         }
         return std::make_pair(this->index_, value);
     }
-}
+} // namespace detail
 
 /**
  * base class to Encapsulates hdeem_get_stats and hdeem_get_stats_total
@@ -238,29 +240,29 @@ namespace detail
 class sensor_stats_base
 {
 public:
-	/**
-	 * Empty constructor. NEVER try to get data from objects build with this constructor.
-	 * Always use connection->get_stats() or connection->get_stats_total() to get data.
-	 */
-	sensor_stats_base():valid_stats_(false)
-	{
-	}
-
-	/**
-	 * Constructor.
-	 *
-	 * @param bmc hdeem handler
-	 */
-    sensor_stats_base(hdeem_bmc_data_t& bmc) : nb_blade_sensors_(bmc.nb_blade_sensors), nb_vr_sensors_(bmc.nb_vr_sensors)
+    /**
+     * Empty constructor. NEVER try to get data from objects build with this constructor.
+     * Always use connection->get_stats() or connection->get_stats_total() to get data.
+     */
+    sensor_stats_base() : valid_stats_(false)
     {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param bmc hdeem handler
+     */
+    sensor_stats_base(hdeem_bmc_data_t& bmc)
+    : nb_blade_sensors_(bmc.nb_blade_sensors), nb_vr_sensors_(bmc.nb_vr_sensors)
+    {
+    }
 
-	/**
-	 * Constructor. Build sensor_stats from another sensor_stats, and invalidate the old one.
-	 *
-	 * @param other sensor_stats to copy and invalidate
-	 */
+    /**
+     * Constructor. Build sensor_stats from another sensor_stats, and invalidate the old one.
+     *
+     * @param other sensor_stats to copy and invalidate
+     */
     sensor_stats_base(sensor_stats_base&& other)
     {
         stats_ = other.stats_;
@@ -269,11 +271,11 @@ public:
         other.valid_stats_ = false;
     }
 
-	/**
-	 * Destructor. Frees data from hdeem (using hdeem_stats_free())
-	 *
-	 * @param bmc hdeem handler
-	 */
+    /**
+     * Destructor. Frees data from hdeem (using hdeem_stats_free())
+     *
+     * @param bmc hdeem handler
+     */
     ~sensor_stats_base()
     {
         // We don't need to free if our object was moved from
@@ -284,18 +286,18 @@ public:
         }
     }
 
-	/**
-	 * R-Value Copy. Get data from old Object, and ivaliadte it.
-	 *
-	 * @param other old object
-	 */
+    /**
+     * R-Value Copy. Get data from old Object, and ivaliadte it.
+     *
+     * @param other old object
+     */
     sensor_stats_base& operator=(sensor_stats_base&& other)
     {
         assert(other.valid_stats_);
-    	if (valid_stats_)
-    	{
+        if (valid_stats_)
+        {
             hdeem_stats_free(&stats_);
-    	}
+        }
         stats_ = other.stats_;
         nb_blade_sensors_ = other.nb_blade_sensors_;
         nb_vr_sensors_ = other.nb_vr_sensors_;
@@ -459,7 +461,6 @@ public:
         {
             return chrono::convert_hdeem_time(stats_.read_time_vr);
         }
-
     }
 
 private:
@@ -472,7 +473,8 @@ private:
     int nb_blade_sensors_;
     int nb_vr_sensors_;
     /**
-     * Indicate whether the stats we have are valid. They may be invalidated if moved from or destroyed.
+     * Indicate whether the stats we have are valid. They may be invalidated if moved from or
+     * destroyed.
      */
     bool valid_stats_ = true;
 
@@ -488,7 +490,6 @@ protected:
 class sensor_stats : public sensor_stats_base
 {
 public:
-
     sensor_stats() = default;
 
     /**
@@ -514,7 +515,6 @@ public:
 class sensor_stats_total : public sensor_stats_base
 {
 public:
-
     sensor_stats_total() = default;
 
     /**
@@ -532,25 +532,26 @@ public:
     }
 };
 
-
 /**
- * Encapsulates hdeem_global_reading_t struct that contains measured sensor data (for multiple sensors).
- * Provides ranges per sensor(bmc/vr, index)
+ * Encapsulates hdeem_global_reading_t struct that contains measured sensor data (for multiple
+ * sensors). Provides ranges per sensor(bmc/vr, index)
  *
  * IMPORTANT: Keep this object alive as long as you are using single_sensor_data returned objects
  */
 class sensor_data
 {
 public:
-    sensor_data(hdeem_bmc_data_t& bmc) : nb_blade_sensors_(bmc.nb_blade_sensors), nb_vr_sensors_(bmc.nb_vr_sensors)
+    sensor_data(hdeem_bmc_data_t& bmc)
+    : nb_blade_sensors_(bmc.nb_blade_sensors), nb_vr_sensors_(bmc.nb_vr_sensors)
     {
         auto rc = hdeem_get_global(&bmc, &readings_);
         if (rc)
         {
             // As documented by Marc Simon in AI82:
             // > You should call hdeem_data_free(), even in the case of an error.
-            // > If the error occured before the memory is allocated, the corresponding pointers are at least
-            // > initialized to NULL and hdeem_data_free() will not get into segmentation violation.
+            // > If the error occured before the memory is allocated, the corresponding pointers are
+            // at least > initialized to NULL and hdeem_data_free() will not get into segmentation
+            // violation.
             hdeem_data_free(&readings_);
             throw error("hdeem_get_global", rc);
         }
@@ -655,8 +656,9 @@ public:
         bmc_.host = strdup(hostname.c_str());
         bmc_.user = strdup(username.c_str());
         bmc_.password = strdup(password.c_str());
-        // This has no meaning. According to the HDEEM OperatingManual V213, only the host user and password field
-        // 'the user must inform'. A host != NULL and != "" implicates out of band, otherwise inband
+        // This has no meaning. According to the HDEEM OperatingManual V213, only the host user and
+        // password field 'the user must inform'. A host != NULL and != "" implicates out of band,
+        // otherwise inband
         bmc_.hasGPIO = 0;
         bmc_.hasPCIe = 0;
 
@@ -686,7 +688,8 @@ public:
     ~connection()
     {
         hdeem_close(&bmc_);
-        if (bmc_.host != nullptr) {
+        if (bmc_.host != nullptr)
+        {
             free(bmc_.host);
             free(bmc_.user);
             free(bmc_.password);
@@ -721,7 +724,8 @@ public:
      * Additional, the function waits until the polling of FPGA and BMC are complited.
      * It further checks for possible overflows. If 10 seconds after the stop, the measurement is
      * still running this function gives throws an error.
-     * This method does update the internal status, so you can call {@link get_status(false)} afterwards.
+     * This method does update the internal status, so you can call {@link get_status(false)}
+     * afterwards.
      */
     void stop()
     {
@@ -745,7 +749,8 @@ public:
             {
                 // The stop was actually successful
                 // Can we handle overflows here better?
-                if (IsBmcOverflow(status) || IsFpgaBladeOverflow(status) || IsFpgaVrOverflow(status))
+                if (IsBmcOverflow(status) || IsFpgaBladeOverflow(status) ||
+                    IsFpgaVrOverflow(status))
                 {
                     throw overflow_error();
                 }
@@ -818,7 +823,6 @@ public:
         return sensor_stats_total(bmc_);
     }
 
-
     /**
      * @param sensor the id of the sensor
      * @return the name of the sensor which is upper case.
@@ -826,16 +830,18 @@ public:
     std::string sensor_name(sensor_id sensor) const
     {
         std::string name_upper;
-        if (sensor.is_blade()) {
+        if (sensor.is_blade())
+        {
             assert(sensor.index() < bmc_.nb_blade_sensors);
             name_upper = std::string(bmc_.name_blade_sensors[sensor.index()]);
-        } else {
+        }
+        else
+        {
             assert(sensor.is_vr());
             assert(sensor.index() < bmc_.nb_vr_sensors);
             name_upper = std::string(bmc_.name_vr_sensors[sensor.index()]);
         }
-        std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(),
-                       ::toupper);
+        std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(), ::toupper);
         return name_upper;
     }
 
@@ -845,25 +851,31 @@ public:
      */
     std::string sensor_real_name(sensor_id sensor) const
     {
-        if (sensor.is_blade()) {
+        if (sensor.is_blade())
+        {
             assert(sensor.index() < bmc_.nb_blade_sensors);
             return bmc_.name_blade_sensors[sensor.index()];
-        } else {
+        }
+        else
+        {
             assert(sensor.is_vr());
             assert(sensor.index() < bmc_.nb_vr_sensors);
             return bmc_.name_vr_sensors[sensor.index()];
         }
     }
 
-	/**
-	 * @param sensor_id id of the sensor.
-	 * @retrun sampling rate in samples per second
-	 */
+    /**
+     * @param sensor_id id of the sensor.
+     * @retrun sampling rate in samples per second
+     */
     double sensor_sampling_rate(sensor_id sensor) const
     {
-    	if (sensor.is_blade()) {
-    		return 1000;
-    	} else {
+        if (sensor.is_blade())
+        {
+            return 1000;
+        }
+        else
+        {
             assert(sensor.is_vr());
             return 100;
         }
@@ -875,10 +887,12 @@ public:
     std::vector<sensor_id> sensors() const
     {
         std::vector<sensor_id> ret;
-        for (int idx = 0; idx < bmc_.nb_blade_sensors; idx++) {
+        for (int idx = 0; idx < bmc_.nb_blade_sensors; idx++)
+        {
             ret.emplace_back(sensor_id::blade(idx));
         }
-        for (int idx = 0; idx < bmc_.nb_vr_sensors; idx++) {
+        for (int idx = 0; idx < bmc_.nb_vr_sensors; idx++)
+        {
             ret.emplace_back(sensor_id::vr(idx));
         }
         return ret;
@@ -916,6 +930,6 @@ inline std::ostream& operator<<(std::ostream& s, const connection& hdeem)
     }
     return s;
 }
-} // namespaec hdeem
+} // namespace hdeem
 
 #endif // HDEEM_HDEEM_CXX_HPP
