@@ -11,18 +11,20 @@
 #define HDEEM_HDEEM_CXX_HPP
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
-#include <cstring>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <vector>
 
+#include <cassert>
+#include <cstring>
+
 extern "C"
 {
 #include <hdeem.h>
 }
+
 namespace hdeem
 {
 namespace chrono
@@ -39,6 +41,7 @@ namespace chrono
         return time_point(time_since_epoch);
     }
 } // namespace chrono
+
 /**
  * General exception for all errors returned by hdeem functions.
  * For other consistency errors, std::runtime_error is used,
@@ -265,6 +268,7 @@ public:
      */
     sensor_stats_base(sensor_stats_base&& other)
     {
+        valid_stats_ = other.valid_stats_;
         stats_ = other.stats_;
         nb_blade_sensors_ = other.nb_blade_sensors_;
         nb_vr_sensors_ = other.nb_vr_sensors_;
@@ -502,6 +506,7 @@ public:
         auto rc = hdeem_get_stats(&bmc, &stats_);
         if (rc)
         {
+            hdeem_stats_free(&stats_);
             throw error("hdeem_get_stats", rc);
         }
     }
@@ -527,6 +532,7 @@ public:
         auto rc = hdeem_get_stats_total(&bmc, &stats_);
         if (rc)
         {
+            hdeem_stats_free(&stats_);
             throw error("hdeem_get_stats_total", rc);
         }
     }
@@ -651,11 +657,13 @@ public:
      * @param username username for the BMC access
      * @param password password for the BMC access
      */
-    connection(std::string hostname, std::string username, std::string password)
+    connection(const std::string& hostname, const std::string& username,
+               const std::string& password)
+    : hostname_(hostname), username_(username), password_(password)
     {
-        bmc_.host = strdup(hostname.c_str());
-        bmc_.user = strdup(username.c_str());
-        bmc_.password = strdup(password.c_str());
+        bmc_.host = hostname_.data();
+        bmc_.user = username_.data();
+        bmc_.password = password_.data();
         // This has no meaning. According to the HDEEM OperatingManual V213, only the host user and
         // password field 'the user must inform'. A host != NULL and != "" implicates out of band,
         // otherwise inband
@@ -677,6 +685,9 @@ private:
         auto ret = hdeem_init(&bmc_);
         if (ret)
         {
+            // This is not suggested by the manual
+            // It worked well in practice and we assume we might be leaking FDs if we don't close
+            hdeem_close(&bmc_);
             throw error("Initializing hdeem (hdeem_init)", ret);
         }
     }
@@ -688,12 +699,6 @@ public:
     ~connection()
     {
         hdeem_close(&bmc_);
-        if (bmc_.host != nullptr)
-        {
-            free(bmc_.host);
-            free(bmc_.user);
-            free(bmc_.password);
-        }
     }
 
     /**
@@ -910,6 +915,11 @@ public:
 
 private:
     bool valid_readings_ = false;
+
+    /* never modify these three strings */
+    std::string hostname_;
+    std::string username_;
+    std::string password_;
 
     hdeem_bmc_data_t bmc_;
     hdeem_status_t status_;
