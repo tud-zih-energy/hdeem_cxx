@@ -661,9 +661,9 @@ public:
                const std::string& password)
     : hostname_(hostname), username_(username), password_(password)
     {
-        bmc_.host = hostname_.data();
-        bmc_.user = username_.data();
-        bmc_.password = password_.data();
+        bmc_.host = const_cast<char*>(hostname_.data());
+        bmc_.user = const_cast<char*>(username_.data());
+        bmc_.password = const_cast<char*>(password_.data());
         // This has no meaning. According to the HDEEM OperatingManual V213, only the host user and
         // password field 'the user must inform'. A host != NULL and != "" implicates out of band,
         // otherwise inband

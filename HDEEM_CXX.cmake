@@ -26,34 +26,4 @@
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-#
-# CMake magic to easily use the HDEEM cxx wrapper in your code.
-#
-
-#
-# Usage:
-#
-# git submodule add git@github.com:score-p/scorep_plugin_cxx_wrapper.git scorep
-#
-# In your CMakeLists.txt
-# include(scorep/ScorepCXXPlugin.cmake)
-#
-
-
-# Note: The CMake Magic requires, that HDEEM was found with a FindScorep script.
-
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake;${CMAKE_MODULE_PATH}")
-
-find_package(HDEEM REQUIRED)
-
-include_directories(SYSTEM ${HDEEM_INCLUDE_DIRS})
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/include)
-
-set(HDEEM_BMC_USER "monitor" CACHE STRING "Username for BMC")
-set(HDEEM_BMC_PASS "xxx" CACHE STRING "Password for BMC")
-
-add_definitions("-DHDEEM_BMC_USER=${HDEEM_BMC_USER}")
-add_definitions("-DHDEEM_BMC_PASS=${HDEEM_BMC_PASS}")
-
-message(STATUS "HDEEM CXX plugin wrapper found.")
+message(FATAL_ERROR "Using HDEEM_CXX.cmake is not supported. Switch over to modern CMake, add_subdirectory() this and use the hdeem::cxx target.")
