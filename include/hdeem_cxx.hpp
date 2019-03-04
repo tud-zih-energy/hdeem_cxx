@@ -914,8 +914,6 @@ public:
     }
 
 private:
-    bool valid_readings_ = false;
-
     /* never modify these three strings */
     std::string hostname_;
     std::string username_;
